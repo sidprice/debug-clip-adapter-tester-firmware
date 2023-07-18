@@ -39,28 +39,37 @@ VTRef_O.direction = dg.Direction.OUTPUT
 # Define the input pins, these are the connections to the debug probe connector
 #
 
-# TODO SWDIO
-
 Gnd_I1 = dg.DigitalInOut(hw.A4)
 Gnd_I1.direction = dg.Direction.INPUT
+Gnd_I1.pull = dg.Pull.DOWN
 
 Gnd_I2 = dg.DigitalInOut(hw.A5)
 Gnd_I2.direction = dg.Direction.INPUT
+Gnd_I2.pull = dg.Pull.DOWN
 
 Gnd_I3 = dg.DigitalInOut(hw.SCK)
 Gnd_I3.direction = dg.Direction.INPUT
+Gnd_I3.pull = dg.Pull.DOWN
 
 Swck_I = dg.DigitalInOut(hw.A0)
 Swck_I.direction = dg.Direction.INPUT
+Swck_I.pull = dg.Pull.DOWN
 
 Swo_I = dg.DigitalInOut(hw.A1)
 Swo_I.direction = dg.Direction.INPUT
+Swo_I.pull = dg.Pull.DOWN
 
 nReset_I = dg.DigitalInOut(hw.A3)
 nReset_I.direction = dg.Direction.INPUT
+nReset_I.pull = dg.Pull.DOWN
 
 VTRef_I = dg.DigitalInOut(hw.MOSI)
 VTRef_I.direction = dg.Direction.INPUT
+VTRef_I.pull = dg.Pull.DOWN
+
+Swdio_I = dg.DigitalInOut(hw.MISO)
+Swdio_I.direction = dg.Direction.INPUT
+Swdio_I.pull = dg.Pull.DOWN
 
 #
 # Define the access indices for the pin states
@@ -76,6 +85,7 @@ pin_states = [
     [Gnd_O, Gnd_I1, "GND 1"],
     [Gnd_O, Gnd_I2, "GND 2"],
     [Gnd_O, Gnd_I3, "GND 3"],
+    [Swdio_O, Swdio_I, "SWDIO"],
     [Swo_O, Swo_I, "SWO"],
     [nReset_O, nReset_I, "nRESET"],
     [Swck_O, Swck_I, "SWCK"],
@@ -131,6 +141,7 @@ def test_inputs(output_pin):
 
 while True:
     led_red = False
+    error_count = 0
     #
     if Start_switch.value == False:
     #
@@ -146,10 +157,22 @@ while True:
                 print(pin_states[output_index][pin_name] + " passed")
             else:
                 print(pin_states[output_index][pin_name] + " failed")
-            t.sleep(0.25)
-        print("Scan completed")
-    else:
-        print("Scan disabled")
-    print()
-    print()
-    t.sleep(2)
+                error_count += 1
+            t.sleep(0.2)
+        if error_count == 0:
+            print("Scan completed correctly")
+            LED_Red.value = False
+            LED_Green.value = True
+        else:
+            print(f"Scan of {str(len(pin_states))} pins completed with {str(error_count)}  errors")
+            LED_Red.value = True
+            LED_Green.value = False
+        print()
+        print()
+        while True:
+            t.sleep(0.15)
+            if Start_switch.value == False:
+                break
+    LED_Red.value = True
+    LED_Green.value = True
+    
